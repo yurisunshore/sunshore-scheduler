@@ -6,262 +6,404 @@
 <title>ミーティングを予約 | 株式会社Sunshore</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  :root{--orange:#F28627;--teal:#3BA7BF;--orange-light:#FEF3E8;--teal-light:#E8F5F8;--orange-mid:#FDDDB8;--bg:#FAFAFA;--white:#FFFFFF;--text:#1A1A1A;--text-mid:#555555;--text-muted:#999999;--border:#E8E8E8;--border-hover:#CCCCCC;--shadow-sm:0 1px 3px rgba(0,0,0,0.08);--shadow-md:0 4px 16px rgba(0,0,0,0.08);--radius:12px;--radius-sm:8px;}
-  *{margin:0;padding:0;box-sizing:border-box;}
-  body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-serif;min-height:100vh;-webkit-font-smoothing:antialiased;}
-  .layout{display:flex;min-height:100vh;}
-  .sidebar{width:300px;min-width:300px;background:var(--white);border-right:1px solid var(--border);padding:36px 28px;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;}
-  .logo-badge{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,var(--orange-light),var(--teal-light));border:1px solid var(--orange-mid);border-radius:100px;padding:6px 14px 6px 8px;margin-bottom:20px;}
-  .logo-icon{width:24px;height:24px;background:linear-gradient(135deg,var(--orange),var(--teal));border-radius:6px;display:flex;align-items:center;justify-content:center;color:white;font-size:12px;font-weight:700;font-family:'Outfit',sans-serif;}
-  .logo-text{font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;color:var(--text);}
-  .sidebar-title{font-family:'Outfit',sans-serif;font-size:21px;font-weight:700;line-height:1.35;margin-bottom:10px;}
-  .sidebar-sub{font-size:13px;color:var(--text-muted);line-height:1.7;margin-bottom:24px;}
-  .info-list{display:flex;flex-direction:column;gap:12px;margin-bottom:28px;}
-  .info-item{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text-mid);}
-  .info-icon{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
-  .info-icon.orange{background:var(--orange-light);}
-  .info-icon.teal{background:var(--teal-light);}
-  .divider{height:1px;background:var(--border);margin:20px 0;}
-  .selected-summary{display:none;background:linear-gradient(135deg,var(--orange-light),var(--teal-light));border:1px solid var(--orange-mid);border-radius:var(--radius-sm);padding:14px 16px;}
-  .selected-summary.visible{display:block;}
-  .selected-summary-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--orange);margin-bottom:5px;font-family:'Outfit',sans-serif;}
-  .selected-summary-date{font-family:'Outfit',sans-serif;font-size:15px;font-weight:700;color:var(--text);line-height:1.4;}
-  .sidebar-footer{margin-top:auto;padding-top:20px;border-top:1px solid var(--border);font-size:11px;color:var(--text-muted);line-height:1.7;}
-  .main{flex:1;padding:40px 44px;overflow-y:auto;}
-  .step{display:none;}
-  .step.active{display:block;animation:fadeIn 0.25s ease;}
-  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-  .step-num{font-family:'Outfit',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--teal);margin-bottom:6px;}
-  .step-title{font-family:'Outfit',sans-serif;font-size:20px;font-weight:700;color:var(--text);margin-bottom:24px;}
-  .month-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;background:var(--white);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 16px;}
-  .month-label{font-family:'Outfit',sans-serif;font-size:16px;font-weight:700;color:var(--text);}
-  .month-btn{width:32px;height:32px;border:1px solid var(--border);border-radius:6px;background:var(--white);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-mid);font-size:17px;line-height:1;transition:all 0.15s;}
-  .month-btn:hover:not(:disabled){border-color:var(--orange);color:var(--orange);background:var(--orange-light);}
-  .month-btn:disabled{opacity:0.3;cursor:not-allowed;}
-  .calendar-grid{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:24px;box-shadow:var(--shadow-sm);}
-  .cal-weekdays{display:grid;grid-template-columns:repeat(7,1fr);border-bottom:1px solid var(--border);background:var(--bg);}
-  .cal-weekday{text-align:center;padding:9px 0;font-size:11px;font-weight:600;color:var(--text-muted);font-family:'Outfit',sans-serif;}
-  .cal-weekday.sun{color:#E57373;}
-  .cal-weekday.sat{color:var(--teal);}
-  .cal-days{display:grid;grid-template-columns:repeat(7,1fr);}
-  .cal-day{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-bottom:1px solid var(--border);border-right:1px solid var(--border);position:relative;min-height:52px;transition:all 0.12s;}
-  .cal-day:nth-child(7n){border-right:none;}
-  .cal-day-num{font-family:'Outfit',sans-serif;font-size:14px;font-weight:500;color:var(--text);}
-  .cal-day-dot{width:4px;height:4px;border-radius:50%;background:var(--orange);margin-top:3px;opacity:0;}
-  .cal-day.has-slots{cursor:pointer;}
-  .cal-day.has-slots .cal-day-dot{opacity:1;}
-  .cal-day.has-slots:hover{background:var(--orange-light);}
-  .cal-day.has-slots:hover .cal-day-num{color:var(--orange);}
-  .cal-day.selected{background:var(--orange)!important;}
-  .cal-day.selected .cal-day-num{color:white;font-weight:700;}
-  .cal-day.selected .cal-day-dot{background:rgba(255,255,255,0.6);opacity:1;}
-  .cal-day.empty .cal-day-num,.cal-day.past .cal-day-num,.cal-day.no-slots .cal-day-num{color:var(--border-hover);}
-  .cal-day.today::before{content:'';position:absolute;top:5px;right:5px;width:5px;height:5px;border-radius:50%;background:var(--teal);}
-  .cal-day.sat:not(.selected) .cal-day-num{color:var(--teal);}
-  .cal-day.sun:not(.selected) .cal-day-num{color:#E57373;}
-  .time-section{display:none;animation:fadeIn 0.2s ease;}
-  .time-section.visible{display:block;}
-  .time-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
-  .time-date{font-family:'Outfit',sans-serif;font-size:15px;font-weight:700;color:var(--text);}
-  .time-dur{font-size:11px;color:var(--teal);background:var(--teal-light);font-weight:600;padding:3px 8px;border-radius:100px;font-family:'Outfit',sans-serif;}
-  .time-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
-  .time-btn{border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 6px;background:var(--white);cursor:pointer;text-align:center;transition:all 0.15s;font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;color:var(--text);box-shadow:var(--shadow-sm);}
-  .time-btn:hover{border-color:var(--orange);color:var(--orange);background:var(--orange-light);transform:translateY(-1px);box-shadow:var(--shadow-md);}
-  .time-btn.selected{border-color:var(--orange);background:var(--orange);color:white;box-shadow:0 4px 12px rgba(242,134,39,0.3);}
-  .back-btn{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:500;color:var(--text-muted);background:none;border:none;cursor:pointer;padding:0;margin-bottom:22px;transition:color 0.15s;}
-  .back-btn:hover{color:var(--text);}
-  .form-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:26px;box-shadow:var(--shadow-sm);margin-bottom:16px;}
-  .form-group{margin-bottom:18px;}
-  .form-group:last-child{margin-bottom:0;}
-  label{display:block;font-size:11px;font-weight:700;color:var(--text-mid);margin-bottom:6px;letter-spacing:0.07em;text-transform:uppercase;font-family:'Outfit',sans-serif;}
-  label span{color:var(--orange);}
-  input,textarea{width:100%;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:11px 14px;font-family:'Noto Sans JP',sans-serif;font-size:14px;color:var(--text);background:var(--white);transition:border-color 0.15s,box-shadow 0.15s;outline:none;}
-  input:focus,textarea:focus{border-color:var(--orange);box-shadow:0 0 0 3px rgba(242,134,39,0.10);}
-  textarea{resize:vertical;min-height:80px;}
-  input::placeholder,textarea::placeholder{color:var(--text-muted);}
-  .submit-btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--orange),#E07820);color:white;border:none;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all 0.2s;box-shadow:0 4px 14px rgba(242,134,39,0.3);letter-spacing:0.02em;}
-  .submit-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(242,134,39,0.4);}
-  .submit-btn:disabled{opacity:0.6;cursor:not-allowed;transform:none;box-shadow:none;}
-  .error-msg{color:#E57373;font-size:12px;margin-top:10px;}
-  .success-wrap{text-align:center;padding:48px 0;}
-  .success-circle{width:72px;height:72px;background:linear-gradient(135deg,var(--orange),var(--teal));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 24px;box-shadow:0 8px 24px rgba(242,134,39,0.25);animation:popIn 0.4s cubic-bezier(0.34,1.56,0.64,1);}
-  @keyframes popIn{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
-  .success-title{font-family:'Outfit',sans-serif;font-size:24px;font-weight:700;margin-bottom:10px;}
-  .success-sub{font-size:14px;color:var(--text-muted);line-height:1.7;margin-bottom:28px;}
-  .success-card{display:inline-block;background:linear-gradient(135deg,var(--orange-light),var(--teal-light));border:1px solid var(--orange-mid);border-radius:var(--radius);padding:18px 32px;font-family:'Outfit',sans-serif;font-size:16px;font-weight:700;color:var(--text);}
-  .loading-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:52px 0;gap:14px;color:var(--text-muted);font-size:13px;}
-  .spinner{width:26px;height:26px;border:2px solid var(--border);border-top-color:var(--orange);border-radius:50%;animation:spin 0.7s linear infinite;}
-  @keyframes spin{to{transform:rotate(360deg)}}
-  .empty-wrap{text-align:center;padding:40px;color:var(--text-muted);font-size:14px;background:var(--white);border:1px solid var(--border);border-radius:var(--radius);line-height:1.8;}
-  @media(max-width:768px){.layout{flex-direction:column;}.sidebar{width:100%;min-width:unset;position:static;height:auto;padding:24px 20px;}.main{padding:24px 20px;}.time-grid{grid-template-columns:repeat(3,1fr);}}
+  :root {
+    --orange: #F28627;
+    --teal: #3BA7BF;
+    --orange-light: #FEF3E8;
+    --teal-light: #E8F5F8;
+    --orange-mid: #FDDDB8;
+    --teal-mid: #B3DCE6;
+    --bg: #FAFAFA;
+    --white: #FFFFFF;
+    --text: #1A1A1A;
+    --text-mid: #555555;
+    --text-muted: #999999;
+    --border: #E8E8E8;
+    --border-hover: #CCCCCC;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:'Noto Sans JP',sans-serif; min-height:100vh; -webkit-font-smoothing:antialiased; }
+
+  .layout { display:flex; min-height:100vh; }
+
+  /* Sidebar */
+  .sidebar { width:300px; min-width:300px; background:var(--white); border-right:1px solid var(--border); padding:36px 28px; display:flex; flex-direction:column; position:sticky; top:0; height:100vh; overflow-y:auto; }
+  .logo-badge { display:inline-flex; align-items:center; gap:8px; background:linear-gradient(135deg,var(--orange-light),var(--teal-light)); border:1px solid var(--orange-mid); border-radius:100px; padding:6px 14px 6px 8px; margin-bottom:20px; }
+  .logo-icon { width:24px; height:24px; background:linear-gradient(135deg,var(--orange),var(--teal)); border-radius:6px; display:flex; align-items:center; justify-content:center; color:white; font-size:12px; font-weight:700; font-family:'Outfit',sans-serif; }
+  .logo-text { font-family:'Outfit',sans-serif; font-size:13px; font-weight:600; color:var(--text); }
+  .sidebar-title { font-family:'Outfit',sans-serif; font-size:21px; font-weight:700; line-height:1.35; margin-bottom:10px; }
+  .sidebar-sub { font-size:13px; color:var(--text-muted); line-height:1.7; margin-bottom:24px; }
+  .info-list { display:flex; flex-direction:column; gap:12px; margin-bottom:28px; }
+  .info-item { display:flex; align-items:center; gap:10px; font-size:13px; color:var(--text-mid); }
+  .info-icon { width:30px; height:30px; border-radius:7px; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0; }
+  .info-icon.orange { background:var(--orange-light); }
+  .info-icon.teal   { background:var(--teal-light); }
+  .divider { height:1px; background:var(--border); margin:20px 0; }
+  .selected-summary { display:none; background:linear-gradient(135deg,var(--orange-light),var(--teal-light)); border:1px solid var(--orange-mid); border-radius:var(--radius-sm); padding:14px 16px; }
+  .selected-summary.visible { display:block; }
+  .selected-summary-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--orange); margin-bottom:5px; font-family:'Outfit',sans-serif; }
+  .selected-summary-date { font-family:'Outfit',sans-serif; font-size:15px; font-weight:700; color:var(--text); line-height:1.4; }
+  .sidebar-footer { margin-top:auto; padding-top:20px; border-top:1px solid var(--border); font-size:11px; color:var(--text-muted); line-height:1.7; }
+
+  /* Main */
+  .main { flex:1; padding:40px 44px; overflow-y:auto; }
+  .step { display:none; }
+  .step.active { display:block; animation:fadeIn 0.25s ease; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+  .step-num { font-family:'Outfit',sans-serif; font-size:11px; font-weight:600; letter-spacing:0.12em; text-transform:uppercase; color:var(--teal); margin-bottom:6px; }
+  .step-title { font-family:'Outfit',sans-serif; font-size:20px; font-weight:700; color:var(--text); margin-bottom:24px; }
+
+  /* Month nav */
+  .month-nav { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; background:var(--white); border:1px solid var(--border); border-radius:var(--radius-sm); padding:10px 16px; }
+  .month-label { font-family:'Outfit',sans-serif; font-size:16px; font-weight:700; color:var(--text); }
+  .month-btn { width:32px; height:32px; border:1px solid var(--border); border-radius:6px; background:var(--white); cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--text-mid); font-size:17px; line-height:1; transition:all 0.15s; }
+  .month-btn:hover:not(:disabled) { border-color:var(--orange); color:var(--orange); background:var(--orange-light); }
+  .month-btn:disabled { opacity:0.3; cursor:not-allowed; }
+
+  /* Calendar */
+  .calendar-grid { background:var(--white); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; margin-bottom:24px; box-shadow:var(--shadow-sm); }
+  .cal-weekdays { display:grid; grid-template-columns:repeat(7,1fr); border-bottom:1px solid var(--border); background:var(--bg); }
+  .cal-weekday { text-align:center; padding:9px 0; font-size:11px; font-weight:600; color:var(--text-muted); font-family:'Outfit',sans-serif; letter-spacing:0.04em; }
+  .cal-weekday.sun { color:#E57373; }
+  .cal-weekday.sat { color:var(--teal); }
+  .cal-days { display:grid; grid-template-columns:repeat(7,1fr); }
+  .cal-day { aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center; border-bottom:1px solid var(--border); border-right:1px solid var(--border); position:relative; min-height:52px; transition:all 0.12s; }
+  .cal-day:nth-child(7n) { border-right:none; }
+  .cal-day-num { font-family:'Outfit',sans-serif; font-size:14px; font-weight:500; color:var(--text); }
+  .cal-day-dot { width:4px; height:4px; border-radius:50%; background:var(--orange); margin-top:3px; opacity:0; }
+  .cal-day.has-slots { cursor:pointer; }
+  .cal-day.has-slots .cal-day-dot { opacity:1; }
+  .cal-day.has-slots:hover { background:var(--orange-light); }
+  .cal-day.has-slots:hover .cal-day-num { color:var(--orange); }
+  .cal-day.selected { background:var(--orange) !important; }
+  .cal-day.selected .cal-day-num { color:white; font-weight:700; }
+  .cal-day.selected .cal-day-dot { background:rgba(255,255,255,0.6); opacity:1; }
+  .cal-day.empty .cal-day-num,
+  .cal-day.past .cal-day-num,
+  .cal-day.no-slots .cal-day-num { color:var(--border-hover); }
+  .cal-day.today::before { content:''; position:absolute; top:5px; right:5px; width:5px; height:5px; border-radius:50%; background:var(--teal); }
+  .cal-day.sat:not(.selected) .cal-day-num { color:var(--teal); }
+  .cal-day.sun:not(.selected) .cal-day-num { color:#E57373; }
+
+  /* Time slots */
+  .time-section { display:none; animation:fadeIn 0.2s ease; }
+  .time-section.visible { display:block; }
+  .time-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+  .time-date { font-family:'Outfit',sans-serif; font-size:15px; font-weight:700; color:var(--text); }
+  .time-dur { font-size:11px; color:var(--text-muted); background:var(--teal-light); color:var(--teal); font-weight:600; padding:3px 8px; border-radius:100px; font-family:'Outfit',sans-serif; }
+  .time-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+  .time-btn { border:1.5px solid var(--border); border-radius:var(--radius-sm); padding:10px 6px; background:var(--white); cursor:pointer; text-align:center; transition:all 0.15s; font-family:'Outfit',sans-serif; font-size:13px; font-weight:600; color:var(--text); box-shadow:var(--shadow-sm); }
+  .time-btn:hover { border-color:var(--orange); color:var(--orange); background:var(--orange-light); transform:translateY(-1px); box-shadow:var(--shadow-md); }
+  .time-btn.selected { border-color:var(--orange); background:var(--orange); color:white; box-shadow:0 4px 12px rgba(242,134,39,0.3); }
+
+  /* Form */
+  .back-btn { display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:500; color:var(--text-muted); background:none; border:none; cursor:pointer; padding:0; margin-bottom:22px; transition:color 0.15s; }
+  .back-btn:hover { color:var(--text); }
+  .form-card { background:var(--white); border:1px solid var(--border); border-radius:var(--radius); padding:26px; box-shadow:var(--shadow-sm); margin-bottom:16px; }
+  .form-group { margin-bottom:18px; }
+  .form-group:last-child { margin-bottom:0; }
+  label { display:block; font-size:11px; font-weight:700; color:var(--text-mid); margin-bottom:6px; letter-spacing:0.07em; text-transform:uppercase; font-family:'Outfit',sans-serif; }
+  label span { color:var(--orange); }
+  input, textarea { width:100%; border:1.5px solid var(--border); border-radius:var(--radius-sm); padding:11px 14px; font-family:'Noto Sans JP',sans-serif; font-size:14px; color:var(--text); background:var(--white); transition:border-color 0.15s, box-shadow 0.15s; outline:none; }
+  input:focus, textarea:focus { border-color:var(--orange); box-shadow:0 0 0 3px rgba(242,134,39,0.10); }
+  textarea { resize:vertical; min-height:80px; }
+  input::placeholder, textarea::placeholder { color:var(--text-muted); }
+  .submit-btn { width:100%; padding:14px; background:linear-gradient(135deg,var(--orange),#E07820); color:white; border:none; border-radius:var(--radius-sm); font-family:'Outfit',sans-serif; font-size:15px; font-weight:700; cursor:pointer; transition:all 0.2s; box-shadow:0 4px 14px rgba(242,134,39,0.3); letter-spacing:0.02em; }
+  .submit-btn:hover { transform:translateY(-1px); box-shadow:0 6px 20px rgba(242,134,39,0.4); }
+  .submit-btn:disabled { opacity:0.6; cursor:not-allowed; transform:none; box-shadow:none; }
+  .error-msg { color:#E57373; font-size:12px; margin-top:10px; }
+
+  /* Success */
+  .success-wrap { text-align:center; padding:48px 0; }
+  .success-circle { width:72px; height:72px; background:linear-gradient(135deg,var(--orange),var(--teal)); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:28px; margin:0 auto 24px; box-shadow:0 8px 24px rgba(242,134,39,0.25); animation:popIn 0.4s cubic-bezier(0.34,1.56,0.64,1); }
+  @keyframes popIn { from{transform:scale(0);opacity:0} to{transform:scale(1);opacity:1} }
+  .success-title { font-family:'Outfit',sans-serif; font-size:24px; font-weight:700; margin-bottom:10px; }
+  .success-sub { font-size:14px; color:var(--text-muted); line-height:1.7; margin-bottom:28px; }
+  .success-card { display:inline-block; background:linear-gradient(135deg,var(--orange-light),var(--teal-light)); border:1px solid var(--orange-mid); border-radius:var(--radius); padding:18px 32px; font-family:'Outfit',sans-serif; font-size:16px; font-weight:700; color:var(--text); }
+
+  /* Loading / Empty */
+  .loading-wrap { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:52px 0; gap:14px; color:var(--text-muted); font-size:13px; }
+  .spinner { width:26px; height:26px; border:2px solid var(--border); border-top-color:var(--orange); border-radius:50%; animation:spin 0.7s linear infinite; }
+  @keyframes spin { to{transform:rotate(360deg)} }
+  .empty-wrap { text-align:center; padding:40px; color:var(--text-muted); font-size:14px; background:var(--white); border:1px solid var(--border); border-radius:var(--radius); line-height:1.8; }
+
+  @media(max-width:768px) {
+    .layout { flex-direction:column; }
+    .sidebar { width:100%; min-width:unset; position:static; height:auto; padding:24px 20px; }
+    .main { padding:24px 20px; }
+    .time-grid { grid-template-columns:repeat(3,1fr); }
+  }
 </style>
 </head>
 <body>
 <div class="layout">
+
   <aside class="sidebar">
-    <div class="logo-badge"><div class="logo-icon">S</div><span class="logo-text">株式会社 Sunshore</span></div>
+    <div class="logo-badge">
+      <div class="logo-icon">S</div>
+      <span class="logo-text">株式会社 Sunshore</span>
+    </div>
     <div class="sidebar-title">ミーティングを<br>予約する</div>
     <div class="sidebar-sub">空いている日時を選んで、かんたんに予約できます。</div>
+
     <div class="info-list">
-      <div class="info-item"><div class="info-icon orange">⏱</div><span>30分のミーティング</span></div>
+      <div class="info-item"><div class="info-icon orange">⏱</div><span>1時間のミーティング</span></div>
       <div class="info-item"><div class="info-icon teal">📅</div><span>平日 9:00〜18:00</span></div>
       <div class="info-item"><div class="info-icon orange">🗓</div><span>今日から1ヶ月先まで</span></div>
     </div>
+
     <div class="divider"></div>
+
     <div class="selected-summary" id="sidebar-summary">
       <div class="selected-summary-label">選択中の日時</div>
       <div class="selected-summary-date" id="sidebar-summary-text">—</div>
     </div>
-    <div class="sidebar-footer">Powered by Google Calendar<br>予約確定後、カレンダーに自動で予定が入ります。</div>
+
+    <div class="sidebar-footer">
+      Powered by Google Calendar<br>
+      予約確定後、カレンダーに自動で予定が入ります。
+    </div>
   </aside>
+
   <main class="main">
+
+    <!-- Step 1 -->
     <div class="step active" id="step1">
       <div class="step-num">Step 01</div>
       <div class="step-title">日付を選んでください</div>
+
       <div class="month-nav">
         <button class="month-btn" id="prev-month-btn" onclick="changeMonth(-1)">‹</button>
         <span class="month-label" id="month-label">読み込み中...</span>
         <button class="month-btn" id="next-month-btn" onclick="changeMonth(1)">›</button>
       </div>
+
       <div class="calendar-grid">
         <div class="cal-weekdays">
-          <div class="cal-weekday sun">日</div><div class="cal-weekday">月</div><div class="cal-weekday">火</div>
-          <div class="cal-weekday">水</div><div class="cal-weekday">木</div><div class="cal-weekday">金</div>
+          <div class="cal-weekday sun">日</div>
+          <div class="cal-weekday">月</div><div class="cal-weekday">火</div>
+          <div class="cal-weekday">水</div><div class="cal-weekday">木</div>
+          <div class="cal-weekday">金</div>
           <div class="cal-weekday sat">土</div>
         </div>
         <div class="cal-days" id="cal-days">
-          <div class="loading-wrap" style="grid-column:1/-1"><div class="spinner"></div><span>空き時間を確認中...</span></div>
+          <div class="loading-wrap" style="grid-column:1/-1">
+            <div class="spinner"></div><span>空き時間を確認中...</span>
+          </div>
         </div>
       </div>
+
       <div class="time-section" id="time-section">
-        <div class="time-header"><div class="time-date" id="time-date">—</div><span class="time-dur">30分</span></div>
+        <div class="time-header">
+          <div class="time-date" id="time-date">—</div>
+          <span class="time-dur">1時間</span>
+        </div>
         <div class="time-grid" id="time-grid"></div>
       </div>
     </div>
+
+    <!-- Step 2 -->
     <div class="step" id="step2">
       <button class="back-btn" onclick="goBack()">← 日時を選び直す</button>
       <div class="step-num">Step 02</div>
       <div class="step-title">お名前とメールアドレスを入力</div>
+
       <div class="form-card">
-        <div class="form-group"><label>お名前 <span>*</span></label><input type="text" id="input-name" placeholder="山田 太郎"></div>
-        <div class="form-group"><label>メールアドレス <span>*</span></label><input type="email" id="input-email" placeholder="taro@example.com"></div>
-        <div class="form-group"><label>メモ（任意）</label><textarea id="input-note" placeholder="ご用件・会議の目的などをご記入ください"></textarea></div>
+        <div class="form-group">
+          <label>お名前 <span>*</span></label>
+          <input type="text" id="input-name" placeholder="山田 太郎">
+        </div>
+        <div class="form-group">
+          <label>メールアドレス <span>*</span></label>
+          <input type="email" id="input-email" placeholder="taro@example.com">
+        </div>
+        <div class="form-group">
+          <label>メモ（任意）</label>
+          <textarea id="input-note" placeholder="ご用件・会議の目的などをご記入ください"></textarea>
+        </div>
       </div>
+
       <div id="form-error" class="error-msg"></div>
       <button class="submit-btn" id="submit-btn" onclick="submitBooking()">予約を確定する →</button>
     </div>
+
+    <!-- Step 3 -->
     <div class="step" id="step3">
       <div class="success-wrap">
         <div class="success-circle">✓</div>
         <div class="success-title">予約が完了しました！</div>
         <div class="success-sub">カレンダーへの招待メールをお送りしました。<br>メール内の「承諾」をクリックすると、あなたのカレンダーに予定が登録されます。</div>
         <div class="success-card" id="success-card">—</div>
-        <div id="success-meet" style="display:none;margin-top:16px;"></div>
+        <div id="success-meet" style="display:none;margin-top:16px;font-size:15px;"></div>
       </div>
     </div>
+
   </main>
 </div>
-<script>
-  const GAS_URL = 'https://script.google.com/macros/s/AKfycbzHPpmdNQRR4xNGefoWR-dPMoFd5_1Jbz_S9oo8ofGaUvrBk1vOI16b_ixJyAA_4JgN/exec';
-  let allSlots=[], selectedSlot=null, currentYear, currentMonth, slotsByDate={};
-  const MONTHS=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
-  const DAYS=['日','月','火','水','木','金','土'];
 
-  window.onload=async function(){
-    const now=new Date(); currentYear=now.getFullYear(); currentMonth=now.getMonth();
-    try{
-      const res=await fetch(GAS_URL+'?action=getSlots');
-      const data=await res.json();
-      allSlots=data||[]; slotsByDate={};
-      allSlots.forEach(s=>{if(!slotsByDate[s.dateKey])slotsByDate[s.dateKey]=[];slotsByDate[s.dateKey].push(s);});
-      renderCalendar();
-    }catch(e){
-      document.getElementById('cal-days').innerHTML='<div class="empty-wrap" style="grid-column:1/-1">スロットの取得に失敗しました。<br>ページを再読み込みしてください。</div>';
-    }
+<script>
+  let allSlots = [], selectedSlot = null;
+  let currentYear, currentMonth;
+  let slotsByDate = {};
+  const MONTHS = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  const DAYS   = ['日','月','火','水','木','金','土'];
+
+  window.onload = function() {
+    const now = new Date();
+    currentYear = now.getFullYear();
+    currentMonth = now.getMonth();
+    google.script.run
+      .withSuccessHandler(onSlotsLoaded)
+      .withFailureHandler(() => {
+        document.getElementById('cal-days').innerHTML =
+          '<div class="empty-wrap" style="grid-column:1/-1">スロットの取得に失敗しました。<br>ページを再読み込みしてください。</div>';
+      })
+      .getSlotsForClient();
   };
 
-  function changeMonth(dir){
-    currentMonth+=dir;
-    if(currentMonth>11){currentMonth=0;currentYear++;}
-    if(currentMonth<0){currentMonth=11;currentYear--;}
+  function onSlotsLoaded(slots) {
+    allSlots = slots || [];
+    slotsByDate = {};
+    allSlots.forEach(s => {
+      if (!slotsByDate[s.dateKey]) slotsByDate[s.dateKey] = [];
+      slotsByDate[s.dateKey].push(s);
+    });
+    renderCalendar();
+  }
+
+  function changeMonth(dir) {
+    currentMonth += dir;
+    if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+    if (currentMonth < 0)  { currentMonth = 11; currentYear--; }
     renderCalendar();
     document.getElementById('time-section').classList.remove('visible');
-    selectedSlot=null; document.getElementById('sidebar-summary').classList.remove('visible');
+    selectedSlot = null;
+    document.getElementById('sidebar-summary').classList.remove('visible');
   }
 
-  function renderCalendar(){
-    const now=new Date(); const todayKey=dKey(now);
-    document.getElementById('month-label').textContent=currentYear+'年 '+MONTHS[currentMonth];
-    document.getElementById('prev-month-btn').disabled=(currentYear===now.getFullYear()&&currentMonth<=now.getMonth());
-    const firstDay=new Date(currentYear,currentMonth,1).getDay();
-    const daysInMonth=new Date(currentYear,currentMonth+1,0).getDate();
-    let html='';
-    for(let i=0;i<firstDay;i++) html+='<div class="cal-day empty"><span class="cal-day-num"></span><div class="cal-day-dot"></div></div>';
-    for(let d=1;d<=daysInMonth;d++){
-      const date=new Date(currentYear,currentMonth,d); const key=dKey(date); const dow=date.getDay();
-      const isPast=date<new Date(now.getFullYear(),now.getMonth(),now.getDate());
-      const isToday=key===todayKey; const hasSlots=!!slotsByDate[key];
-      let cls='cal-day';
-      if(isPast)cls+=' past'; else if(!hasSlots)cls+=' no-slots'; else cls+=' has-slots';
-      if(isToday)cls+=' today'; if(dow===6)cls+=' sat'; if(dow===0)cls+=' sun';
-      const onclick=(hasSlots&&!isPast)?`onclick="selectDate('${key}',this)"`:'';
-      html+=`<div class="${cls}" ${onclick}><span class="cal-day-num">${d}</span><div class="cal-day-dot"></div></div>`;
+  function renderCalendar() {
+    const now = new Date();
+    const todayKey = dKey(now);
+    document.getElementById('month-label').textContent = currentYear + '年 ' + MONTHS[currentMonth];
+    document.getElementById('prev-month-btn').disabled =
+      (currentYear === now.getFullYear() && currentMonth <= now.getMonth());
+
+    const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+    let html = '';
+
+    for (let i = 0; i < firstDay; i++)
+      html += '<div class="cal-day empty"><span class="cal-day-num"></span><div class="cal-day-dot"></div></div>';
+
+    for (let d = 1; d <= daysInMonth; d++) {
+      const date = new Date(currentYear, currentMonth, d);
+      const key  = dKey(date);
+      const dow  = date.getDay();
+      const isPast   = date < new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const isToday  = key === todayKey;
+      const hasSlots = !!slotsByDate[key];
+
+      let cls = 'cal-day';
+      if (isPast) cls += ' past';
+      else if (!hasSlots) cls += ' no-slots';
+      else cls += ' has-slots';
+      if (isToday) cls += ' today';
+      if (dow === 6) cls += ' sat';
+      if (dow === 0) cls += ' sun';
+
+      const onclick = (hasSlots && !isPast) ? `onclick="selectDate('${key}',this)"` : '';
+      html += `<div class="${cls}" ${onclick}>
+        <span class="cal-day-num">${d}</span>
+        <div class="cal-day-dot"></div>
+      </div>`;
     }
-    document.getElementById('cal-days').innerHTML=html;
+
+    document.getElementById('cal-days').innerHTML = html;
   }
 
-  function dKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
-
-  function selectDate(key,el){
-    document.querySelectorAll('.cal-day').forEach(d=>d.classList.remove('selected')); el.classList.add('selected');
-    const slots=slotsByDate[key]||[]; const date=new Date(key+'T00:00:00');
-    document.getElementById('time-date').textContent=(date.getMonth()+1)+'月'+date.getDate()+'日（'+DAYS[date.getDay()]+'）';
-    document.getElementById('time-grid').innerHTML=slots.map(s=>`<button class="time-btn" onclick="selectSlot('${s.key}',this)">${s.time}</button>`).join('');
-    const ts=document.getElementById('time-section'); ts.classList.add('visible');
-    ts.scrollIntoView({behavior:'smooth',block:'nearest'});
+  function dKey(d) {
+    return d.getFullYear() + '-' +
+      String(d.getMonth()+1).padStart(2,'0') + '-' +
+      String(d.getDate()).padStart(2,'0');
   }
 
-  function selectSlot(key,el){
-    selectedSlot=allSlots.find(s=>s.key===key); if(!selectedSlot)return;
-    document.querySelectorAll('.time-btn').forEach(b=>b.classList.remove('selected')); el.classList.add('selected');
-    document.getElementById('sidebar-summary-text').textContent=selectedSlot.label;
+  function selectDate(key, el) {
+    document.querySelectorAll('.cal-day').forEach(d => d.classList.remove('selected'));
+    el.classList.add('selected');
+
+    const slots = slotsByDate[key] || [];
+    const date  = new Date(key + 'T00:00:00');
+    document.getElementById('time-date').textContent =
+      (date.getMonth()+1) + '月' + date.getDate() + '日（' + DAYS[date.getDay()] + '）';
+
+    document.getElementById('time-grid').innerHTML = slots.map(s =>
+      `<button class="time-btn" onclick="selectSlot('${s.key}',this)">${s.time}</button>`
+    ).join('');
+
+    const ts = document.getElementById('time-section');
+    ts.classList.add('visible');
+    ts.scrollIntoView({ behavior:'smooth', block:'nearest' });
+  }
+
+  function selectSlot(key, el) {
+    selectedSlot = allSlots.find(s => s.key === key);
+    if (!selectedSlot) return;
+    document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('selected'));
+    el.classList.add('selected');
+    document.getElementById('sidebar-summary-text').textContent = selectedSlot.label;
     document.getElementById('sidebar-summary').classList.add('visible');
-    setTimeout(()=>showStep('step2'),280);
+    setTimeout(() => showStep('step2'), 280);
   }
 
-  function goBack(){selectedSlot=null;document.getElementById('sidebar-summary').classList.remove('visible');showStep('step1');}
-
-  function showStep(id){
-    document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
-    document.getElementById(id).classList.add('active'); window.scrollTo({top:0,behavior:'smooth'});
+  function goBack() {
+    selectedSlot = null;
+    document.getElementById('sidebar-summary').classList.remove('visible');
+    showStep('step1');
   }
 
-  async function submitBooking(){
-    const name=document.getElementById('input-name').value.trim();
-    const email=document.getElementById('input-email').value.trim();
-    const note=document.getElementById('input-note').value.trim();
-    const errEl=document.getElementById('form-error'); errEl.textContent='';
-    if(!name){errEl.textContent='⚠ お名前を入力してください';return;}
-    if(!email||!email.includes('@')){errEl.textContent='⚠ 正しいメールアドレスを入力してください';return;}
-    if(!selectedSlot){errEl.textContent='⚠ 日時が選択されていません';return;}
-    const btn=document.getElementById('submit-btn'); btn.disabled=true; btn.textContent='予約中...';
-    try{
-      const params=new URLSearchParams({action:'book',slotKey:selectedSlot.key,name,email,note});
-      const res=await fetch(GAS_URL+'?'+params.toString());
-      const r=await res.json();
-      if(r.success){
-        document.getElementById('success-card').textContent=selectedSlot.label;
-        const meetEl=document.getElementById('success-meet');
-        if(r.meetUrl){meetEl.innerHTML='<a href="'+r.meetUrl+'" target="_blank" style="color:var(--teal);font-weight:700;text-decoration:none;">📹 Google Meetリンクを開く →</a>';meetEl.style.display='block';}
-        showStep('step3');
-      }else{
-        errEl.textContent='⚠ '+(r.message||'予約に失敗しました');
-        btn.disabled=false; btn.textContent='予約を確定する →';
-      }
-    }catch(e){
-      errEl.textContent='⚠ エラーが発生しました。再度お試しください';
-      btn.disabled=false; btn.textContent='予約を確定する →';
-    }
+  function showStep(id) {
+    document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo({ top:0, behavior:'smooth' });
+  }
+
+  function submitBooking() {
+    const name  = document.getElementById('input-name').value.trim();
+    const email = document.getElementById('input-email').value.trim();
+    const note  = document.getElementById('input-note').value.trim();
+    const errEl = document.getElementById('form-error');
+    errEl.textContent = '';
+    if (!name)                       { errEl.textContent = '⚠ お名前を入力してください'; return; }
+    if (!email || !email.includes('@')) { errEl.textContent = '⚠ 正しいメールアドレスを入力してください'; return; }
+    if (!selectedSlot)               { errEl.textContent = '⚠ 日時が選択されていません'; return; }
+
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = true; btn.textContent = '予約中...';
+
+    google.script.run
+      .withSuccessHandler(r => {
+        if (r.success) {
+          document.getElementById('success-card').textContent = r.label || selectedSlot.label;
+          const meetEl = document.getElementById('success-meet');
+          if (r.meetUrl) {
+            meetEl.innerHTML = '<a href="' + r.meetUrl + '" target="_blank" style="color:var(--teal);font-weight:700;text-decoration:none;">📹 Google Meetリンクを開く →</a>';
+            meetEl.style.display = 'block';
+          }
+          showStep('step3');
+        } else {
+          errEl.textContent = '⚠ ' + (r.message || '予約に失敗しました');
+          btn.disabled = false; btn.textContent = '予約を確定する →';
+        }
+      })
+      .withFailureHandler(() => {
+        errEl.textContent = '⚠ エラーが発生しました。再度お試しください';
+        btn.disabled = false; btn.textContent = '予約を確定する →';
+      })
+      .bookSlot(selectedSlot.key, name, email, note);
   }
 </script>
 </body>
