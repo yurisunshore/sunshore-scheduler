@@ -94,7 +94,7 @@
   .time-section.visible { display:block; }
   .time-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
   .time-date { font-family:'Outfit',sans-serif; font-size:15px; font-weight:700; color:var(--text); }
-  .time-dur { font-size:11px; color:var(--text-muted); background:var(--teal-light); color:var(--teal); font-weight:600; padding:3px 8px; border-radius:100px; font-family:'Outfit',sans-serif; }
+  .time-dur { font-size:11px; background:var(--teal-light); color:var(--teal); font-weight:600; padding:3px 8px; border-radius:100px; font-family:'Outfit',sans-serif; }
   .time-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
   .time-btn { border:1.5px solid var(--border); border-radius:var(--radius-sm); padding:10px 6px; background:var(--white); cursor:pointer; text-align:center; transition:all 0.15s; font-family:'Outfit',sans-serif; font-size:13px; font-weight:600; color:var(--text); box-shadow:var(--shadow-sm); }
   .time-btn:hover { border-color:var(--orange); color:var(--orange); background:var(--orange-light); transform:translateY(-1px); box-shadow:var(--shadow-md); }
@@ -246,6 +246,8 @@
 </div>
 
 <script>
+  const GAS_URL = 'https://script.google.com/macros/s/AKfycbzHPpmdNQRR4xNGefoWR-dPMoFd5_1Jbz_S9oo8ofGaUvrBk1vOI16b_ixJyAA_4JgN/exec';
+
   let allSlots = [], selectedSlot = null;
   let currentYear, currentMonth;
   let slotsByDate = {};
@@ -256,13 +258,13 @@
     const now = new Date();
     currentYear = now.getFullYear();
     currentMonth = now.getMonth();
-    google.script.run
-      .withSuccessHandler(onSlotsLoaded)
-      .withFailureHandler(() => {
+    fetch(GAS_URL + '?action=getSlots')
+      .then(r => r.json())
+      .then(onSlotsLoaded)
+      .catch(() => {
         document.getElementById('cal-days').innerHTML =
           '<div class="empty-wrap" style="grid-column:1/-1">スロットの取得に失敗しました。<br>ページを再読み込みしてください。</div>';
-      })
-      .getSlotsForClient();
+      });
   };
 
   function onSlotsLoaded(slots) {
@@ -377,15 +379,22 @@
     const note  = document.getElementById('input-note').value.trim();
     const errEl = document.getElementById('form-error');
     errEl.textContent = '';
-    if (!name)                       { errEl.textContent = '⚠ お名前を入力してください'; return; }
+    if (!name)                        { errEl.textContent = '⚠ お名前を入力してください'; return; }
     if (!email || !email.includes('@')) { errEl.textContent = '⚠ 正しいメールアドレスを入力してください'; return; }
-    if (!selectedSlot)               { errEl.textContent = '⚠ 日時が選択されていません'; return; }
+    if (!selectedSlot)                { errEl.textContent = '⚠ 日時が選択されていません'; return; }
 
     const btn = document.getElementById('submit-btn');
     btn.disabled = true; btn.textContent = '予約中...';
 
-    google.script.run
-      .withSuccessHandler(r => {
+    const url = GAS_URL + '?action=book'
+      + '&slotKey=' + encodeURIComponent(selectedSlot.key)
+      + '&name='    + encodeURIComponent(name)
+      + '&email='   + encodeURIComponent(email)
+      + '&note='    + encodeURIComponent(note);
+
+    fetch(url)
+      .then(r => r.json())
+      .then(r => {
         if (r.success) {
           document.getElementById('success-card').textContent = r.label || selectedSlot.label;
           const meetEl = document.getElementById('success-meet');
@@ -399,11 +408,10 @@
           btn.disabled = false; btn.textContent = '予約を確定する →';
         }
       })
-      .withFailureHandler(() => {
+      .catch(() => {
         errEl.textContent = '⚠ エラーが発生しました。再度お試しください';
         btn.disabled = false; btn.textContent = '予約を確定する →';
-      })
-      .bookSlot(selectedSlot.key, name, email, note);
+      });
   }
 </script>
 </body>
